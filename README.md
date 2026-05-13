@@ -1,114 +1,146 @@
 # 🌐 Peer Learning Platform
 
-A modern web application that enables students to connect, collaborate, and learn from each other through peer-to-peer interactions.
+A modern peer-to-peer learning platform where students can connect, collaborate, and learn together through interactive sessions, messaging, leaderboards, and AI-powered assistance.
 
 ---
 
-## 🚀 Features
+# 🚀 Features
 
-* 🔐 User Authentication (Signup/Login)
-* 👥 User Profiles (skills, interests, bio)
-* 🔍 Search Peers by Skills
-* 📚 Create & Join Learning Sessions
-* 💬 Chat / Messaging
-* ⚡ Real-time data updates
-
----
-
-## 🧠 Problem Statement
-
-Many students struggle to find the right learning partners or mentors.
-This platform bridges that gap by enabling **peer-to-peer knowledge sharing** based on skills and interests.
+- 🔐 User Authentication (Signup/Login)
+- 👤 User Profiles
+- 🔍 Discover Peers by Skills & Interests
+- 📚 Create & Join Learning Sessions
+- 💬 Real-Time Messaging System
+- 🤖 AI Chatbot Assistance
+- 🏆 Leaderboard & Ranking System
+- 📊 Personalized Dashboard
+- ⚡ Responsive Modern UI
 
 ---
 
-## 🛠️ Tech Stack
+# 🧠 Problem Statement
 
-* **Frontend:** React.js (Lovable AI generated UI)
-* **Backend:** Firebase
-* **Database:** Firestore
-* **Authentication:** Firebase Auth
-* **Hosting:** (Firebase / Vercel / GitHub Pages)
+Many students struggle to find the right learning partners, mentors, or collaborative study environments.
+
+The Peer Learning Platform solves this problem by enabling students to connect and learn from each other through peer-to-peer knowledge sharing and community interaction.
 
 ---
 
-## 📦 Project Structure
+# 🛠️ Tech Stack
 
-```
-peer-learning-app/
+## Frontend
+- TypeScript
+- JavaScript
+- React.js
+- Tailwind CSS
+
+## Backend & Database
+- Supabase
+- PostgreSQL
+
+## Authentication
+- Supabase Authentication
+
+## Hosting
+- Vercel
+
+---
+
+# 📦 Project Structure
+
+```bash
+peer-learning-platform/
+│── public/
 │── src/
 │   ├── components/
 │   ├── pages/
-│   ├── firebase.js
-│   └── App.js
-│── public/
+│   ├── integrations/
+│   ├── hooks/
+│   └── App.tsx
 │── package.json
+│── README.md
+````
+
+---
+
+# ⚙️ Setup Instructions
+
+## 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/your-username/peer-learning-platform.git
+cd peer-learning-platform
 ```
 
 ---
 
-## ⚙️ Setup Instructions
-
-### 1️⃣ Clone the Repository
-
-```bash
-git clone https://github.com/your-username/peer-learning-app.git
-cd peer-learning-app
-```
-
-### 2️⃣ Install Dependencies
+## 2️⃣ Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3️⃣ Setup Firebase
+---
 
-Create a Firebase project and add your config in:
+## 3️⃣ Setup Supabase
 
-```js
-// firebase.js
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-};
+Create a Supabase project and add your environment variables:
+
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ---
 
-### 4️⃣ Run the App
+## 4️⃣ Run the Project
 
 ```bash
-npm start
+npm run dev
 ```
 
 ---
 
-## 🔥 Future Enhancements
+# 🌟 Future Enhancements
 
-* 🤖 AI-based peer matching
-* 📊 Skill-based recommendations
-* 🎥 Video session integration
-* 🧾 Session history tracking
-* 🌍 Multi-language support
+* 🎥 Video Calling Integration
+* 📅 Session Scheduling
+* 🧠 AI-based Peer Recommendations
+* 🔔 Notifications System
+* 🌍 Multi-language Support
 
 ---
 
-## 👩‍💻 Author
+# 🤝 Open Source Contributions
+
+Contributions are welcome 🚀
+
+You can contribute by:
+
+* Improving UI/UX
+* Adding new features
+* Fixing bugs
+* Enhancing performance
+* Improving documentation
+
+---
+
+# 👩‍💻 Author
 
 **Durdana Sultana**
 Computer Science (AI & ML) Student
 
 ---
 
-## ⭐ Contribute
+# ⭐ Support
 
-Feel free to fork this repository and contribute!
-Pull requests are welcome 🚀
+If you like this project, give it a ⭐ on GitHub.
 
 ---
 
-## 📄 License
+# 📄 License
 
 This project is open-source and available under the MIT License.
+
+```
+```
