@@ -88,7 +88,8 @@ export default function Landing() {
   const { setTheme } = useTheme();
 
   const [open, setOpen] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); 
+  const [showBackToTop, setShowBackToTop] = useState(false); 
   const [streak, setStreak] = useState<number | null>(null);
 
   useEffect(() => {
@@ -96,6 +97,24 @@ export default function Landing() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+  const handleScroll = () => {
+    setShowBackToTop(window.scrollY > 300);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
+
 
   useEffect(() => {
     // Device-local daily streak using localStorage
@@ -716,13 +735,13 @@ export default function Landing() {
           </div>
 
           <div className="flex gap-8 text-slate-300">
-            <a href="#" className="transition hover:text-cyan-400">
+            <a href="#features" className="transition hover:text-cyan-400">
               Features
             </a>
-            <a href="#" className="transition hover:text-cyan-400">
+            <a href="#community" className="transition hover:text-cyan-400">
               Communities
             </a>
-            <a href="#" className="transition hover:text-cyan-400">
+            <a href="#faq" className="transition hover:text-cyan-400">
               FAQ
             </a>
           </div>
@@ -730,6 +749,15 @@ export default function Landing() {
           <div className="text-slate-500">© 2026 PeerLearn</div>
         </div>
       </footer>
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-24 z-50 rounded-full bg-cyan-500 px-4 py-3 text-black shadow-lg transition hover:bg-cyan-400"
+          aria-label="Back to top"
+        >
+        ↑
+        </button>
+      )}
     </motion.div>
   );
 }
