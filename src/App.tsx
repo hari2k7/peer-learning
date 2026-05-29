@@ -104,7 +104,16 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/ai" element={<AIPage />} />
+          <Route
+            path="/ai"
+            element={
+              <ProtectedRoute>
+                <WithNav>
+                  <AIPage />
+                </WithNav>
+              </ProtectedRoute>
+            }
+          />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/become-mentor" element={<BecomeMentor />} />

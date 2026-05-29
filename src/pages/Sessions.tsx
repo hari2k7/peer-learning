@@ -722,6 +722,7 @@ const [summaryLoading, setSummaryLoading] =
             </div>
 
 
+
            {/* TYPING INDICATOR */}
             {isTyping && (
               <div className="mb-4 bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 px-4 py-3 rounded-2xl text-sm animate-pulse">
