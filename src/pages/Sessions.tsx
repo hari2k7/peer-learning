@@ -44,11 +44,29 @@ const Sessions = () => {
 
   const [message, setMessage] = useState("");
 
+  const [activities, setActivities] = useState<any[]>([]);
+
+  const [userStatus, setUserStatus] = useState("Active");
+  
+  const [isTyping, setIsTyping] = useState(false);
+
   const [search, setSearch] = useState("");
 
   const [isVideoActive, setIsVideoActive] = useState(false);
+  const [sessionSummary, setSessionSummary] =
+  useState<any>(null);
+
+
+const [summaryLoading, setSummaryLoading] =
+  useState(false);
+
+  const [studyTime, setStudyTime] = useState(60 * 60); // 1 hour
+
 
   const messagesEndRef = useRef<any>(null);
+  
+  // Track sessions that have already granted XP to prevent infinite farming
+  const awardedSessions = useRef<Set<string>>(new Set());
 
   // FETCH SESSIONS
   useEffect(() => {
@@ -72,6 +90,35 @@ const Sessions = () => {
     };
 
     fetchSessions();
+  }, []);
+
+  // USER ACTIVITY TRACKER
+  useEffect(() => {
+    let idleTimer: any;
+
+    const handleActivity = () => {
+      setUserStatus("Active");
+
+      clearTimeout(idleTimer);
+
+      idleTimer = setTimeout(() => {
+        setUserStatus("Idle");
+      }, 15000);
+    };
+
+    window.addEventListener("mousemove", handleActivity);
+    window.addEventListener("keydown", handleActivity);
+    window.addEventListener("click", handleActivity);
+
+    handleActivity();
+
+    return () => {
+      clearTimeout(idleTimer);
+
+      window.removeEventListener("mousemove", handleActivity);
+      window.removeEventListener("keydown", handleActivity);
+      window.removeEventListener("click", handleActivity);
+    };
   }, []);
 
   // FILTER SESSIONS
@@ -120,6 +167,18 @@ const Sessions = () => {
 
     fetchMessages();
 
+    setActivities((prev) => [
+        {
+          id: Date.now(),
+          text: `${user?.user_metadata?.full_name || "Someone"} joined the session`,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+        ...prev,
+      ]);
+
     // REALTIME
     const channel = supabase
       .channel("realtime-messages")
@@ -149,6 +208,34 @@ const Sessions = () => {
     };
   }, [selectedSession]);
 
+  // STUDY TIMER
+    useEffect(() => {
+      const timer = setInterval(() => {
+        setStudyTime((prev) => {
+          if (prev <= 0) {
+            clearInterval(timer);
+            return 0;
+          }
+
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }, []);
+
+    const formatTime = (time: number) => {
+      const hours = Math.floor(time / 3600);
+      const minutes = Math.floor((time % 3600) / 60);
+      const seconds = time % 60;
+
+      return `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
+    };
+
   // AUTO SCROLL
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
@@ -156,9 +243,57 @@ const Sessions = () => {
     });
   }, [messages]);
 
+  // USER ACTIVITY TRACKER
+  useEffect(() => {
+    let idleTimer: ReturnType<typeof setTimeout>;
+    let throttleTimer: ReturnType<typeof setTimeout>;
+    let lastMove = 0;
+
+    const handleActivity = () => {
+      setUserStatus("Active");
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        setUserStatus("Idle");
+      }, 15000);
+    };
+
+    const throttledMove = (e: MouseEvent) => {
+      const now = Date.now();
+      if (now - lastMove < 200) return;
+      lastMove = now;
+      handleActivity();
+    };
+
+    window.addEventListener("mousemove", throttledMove, { passive: true });
+    window.addEventListener("keydown", handleActivity, { passive: true });
+    window.addEventListener("click", handleActivity, { passive: true });
+
+    handleActivity();
+
+    return () => {
+      clearTimeout(idleTimer);
+      clearTimeout(throttleTimer);
+      window.removeEventListener("mousemove", throttledMove);
+      window.removeEventListener("keydown", handleActivity);
+      window.removeEventListener("click", handleActivity);
+    };
+  }, []);
+
   // SEND MESSAGE
   const sendMessage = async () => {
     if (!message.trim() || !selectedSession) return;
+
+    setActivities((prev) => [
+        {
+          id: Date.now(),
+          text: `${user?.user_metadata?.full_name || "Someone"} is participating in discussion`,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+        ...prev,
+      ]);
 
     await (supabase as any)
       .from("messages")
@@ -172,6 +307,18 @@ const Sessions = () => {
       });
 
     setMessage("");
+    
+   setActivities((prev) => [
+      {
+        id: Date.now(),
+        text: `${user?.user_metadata?.full_name || "Someone"} sent a message`,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+      ...prev,
+    ]);
   };
 
   return (
@@ -205,9 +352,9 @@ const Sessions = () => {
             type="text"
             placeholder="Search sessions..."
             value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
+            onChange={(e) => {
+            setSearch(e.target.value);
+          }}
             className="w-full bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl py-4 pl-14 pr-4 outline-none focus:border-cyan-400 transition"
           />
         </div>
@@ -261,11 +408,56 @@ const Sessions = () => {
 
             {/* SESSIONS */}
             {isVideoActive && selectedSession ? (
-              <VideoRoom 
-                roomName={selectedSession.id} 
-                userName={user?.user_metadata?.full_name || "Anonymous Learner"} 
-                onLeave={() => setIsVideoActive(false)} 
-              />
+              <VideoRoom
+  roomName={selectedSession.id}
+  userName={
+    user?.user_metadata?.full_name ||
+    "Anonymous Learner"
+  }
+  onLeave={async () => {
+    setIsVideoActive(false);
+
+    if (!selectedSession || messages.length === 0)
+      return;
+
+    try {
+      setSummaryLoading(true);
+
+      const response = await fetch(
+        "http://localhost:5000/api/ai/generate-summary",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      setSessionSummary(data);
+
+      await (supabase as any)
+        .from("session_summaries")
+        .insert({
+          session_id: selectedSession.id,
+          summary: data.summary,
+          key_takeaways:
+            data.key_takeaways || [],
+        });
+    } catch (error) {
+      console.error(
+        "Summary generation failed",
+        error
+      );
+    } finally {
+      setSummaryLoading(false);
+    }
+  }}
+/>
             ) : (
             <div className="grid gap-5">
               {filteredSessions.length > 0 ? (
@@ -407,16 +599,68 @@ const Sessions = () => {
                   {selectedSession?.title}
                 </p>
 
-                <div className="mt-3 inline-flex items-center gap-2 bg-green-500/10 border border-green-400/20 text-green-300 px-3 py-1 rounded-full text-sm">
+                <div className="flex flex-col gap-3 mt-4">
+
+                <div className="flex flex-wrap gap-3">
+
+                <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-400/20 text-green-300 px-3 py-1 rounded-full text-sm w-fit">
                   🟢 42 learners online
                 </div>
+
+                <div
+                  className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border w-fit ${
+                    userStatus === "Active"
+                      ? "bg-cyan-500/10 border-cyan-400/20 text-cyan-300"
+                      : "bg-yellow-500/10 border-yellow-400/20 text-yellow-300"
+                  }`}
+                >
+                  {userStatus === "Active" ? "⚡" : "🌙"}
+                  {userStatus}
+                </div>
+              </div>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                  
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white">
+                      Shared Study Timer
+                    </h3>
+
+                    <span className="text-cyan-300 font-mono text-lg">
+                      {formatTime(studyTime)}
+                    </span>
+                  </div>
+
+                  <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-cyan-400 to-purple-500 h-full transition-all duration-1000"
+                      style={{
+                        width: `${(studyTime / 3600) * 100}%`,
+                      }}
+                    />
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-2">
+                    Synchronized collaborative study session timer
+                  </p>
+                </div>
+              </div>
               </div>
               
+              {isVideoActive && (
+              <div className="mb-3 bg-purple-500/10 border border-purple-400/20 text-purple-300 px-3 py-2 rounded-xl text-sm">
+                🎥 Collaborative video study session is active
+              </div>
+            )}
+
               {selectedSession && !isVideoActive && (
                 <button 
                   onClick={() => {
                     setIsVideoActive(true);
-                    awardXP({ activity: 'session_join' });
+                    // Prevent infinite XP farming loophole
+                    if (!awardedSessions.current.has(selectedSession.id)) {
+                      awardXP({ activity: 'session_join' });
+                      awardedSessions.current.add(selectedSession.id);
+                    }
                   }}
                   className="flex items-center gap-2 bg-gradient-to-r from-cyan-400 to-purple-500 text-black px-4 py-2 rounded-2xl font-bold hover:opacity-90 transition"
                 >
@@ -435,13 +679,13 @@ const Sessions = () => {
 
             {/* MESSAGES */}
             <div className="flex-1 overflow-y-auto py-5 space-y-4">
-              {messages.map((msg, index) => {
+              {messages.map((msg) => {
                 const isCurrentUser =
                   msg.user_id === user?.id;
 
                 return (
                   <div
-                    key={index}
+                    key={msg.id}
                     className={`flex ${
                       isCurrentUser
                         ? "justify-end"
@@ -479,6 +723,56 @@ const Sessions = () => {
               <div ref={messagesEndRef} />
             </div>
 
+
+
+           {/* TYPING INDICATOR */}
+            {isTyping && (
+              <div className="mb-4 bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 px-4 py-3 rounded-2xl text-sm animate-pulse">
+                Someone is typing in the collaborative session...
+              </div>
+            )}
+     
+          {/* ACTIVITY FEED */}
+            <div className="border-t border-white/10 pt-4 mb-4">
+
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  ⚡ Live Activity
+                </h3>
+
+                <span className="text-xs text-cyan-300">
+                  Real-time updates
+                </span>
+              </div>
+
+              <div className="space-y-3 max-h-40 overflow-y-auto">
+
+                {activities.length === 0 ? (
+                  <div className="text-sm text-gray-500">
+                    No recent activity yet.
+                  </div>
+                ) : (
+                  activities.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="bg-white/5 border border-white/10 rounded-xl p-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-white">
+                          {activity.text}
+                        </p>
+
+                        <span className="text-xs text-gray-400">
+                          {activity.time}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+
+              </div>
+            </div>
+
             {/* INPUT */}
             <div className="pt-4 border-t border-white/10 flex gap-3">
               <input
@@ -503,6 +797,60 @@ const Sessions = () => {
                 <Send size={20} />
               </button>
             </div>
+            {/* SUMMARY LOADING */}
+{summaryLoading && (
+  <div className="mt-5 bg-white/5 border border-white/10 rounded-2xl p-5">
+    <p className="text-cyan-300 font-semibold">
+      Generating AI Summary...
+    </p>
+  </div>
+)}
+
+{/* SESSION SUMMARY */}
+{sessionSummary && (
+  <div className="mt-5 bg-white/5 border border-cyan-400/20 rounded-2xl p-5">
+    <div className="flex items-center gap-2 mb-4">
+      <Sparkles
+        className="text-cyan-400"
+        size={20}
+      />
+
+      <h3 className="text-xl font-bold">
+        Session Summary
+      </h3>
+    </div>
+
+    <p className="text-gray-300 mb-5">
+      {sessionSummary.summary}
+    </p>
+
+    {sessionSummary.key_takeaways
+      ?.length > 0 && (
+      <div>
+        <h4 className="font-semibold mb-3 text-cyan-300">
+          Key Takeaways
+        </h4>
+
+        <ul className="space-y-2">
+          {sessionSummary.key_takeaways.map(
+            (
+              takeaway: string,
+              index: number
+            ) => (
+              <li
+                key={index}
+                className="text-gray-300 flex gap-2"
+              >
+                <span>•</span>
+                <span>{takeaway}</span>
+              </li>
+            )
+          )}
+        </ul>
+      </div>
+    )}
+  </div>
+)}
             </>
             ) : (
               <div className="flex flex-1 items-center justify-center text-gray-500 flex-col gap-3">

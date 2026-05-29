@@ -44,9 +44,9 @@ const { data, error } = await supabaseClient.auth.getUser(token);
   if (error || !data?.user) {
     return res.status(401).json({ error: "Invalid or expired session" });
   }
-if (!req.user?.id) {
-  return res.status(401).json({ error: "Authentication required" });
-}
+  if (!data.user?.id) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
 
   req.user = data.user;
   next();

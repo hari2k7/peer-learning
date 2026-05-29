@@ -124,24 +124,27 @@ const Discover = () => {
 
     // SEARCH
     if (search) {
-      matched = matched.filter(
-        (u) =>
-          u.name
-            ?.toLowerCase()
-            .includes(search.toLowerCase()) ||
-          u.skills
-            ?.toLowerCase()
-            .includes(search.toLowerCase())
-      );
+      matched = matched.filter((u) => {
+        const skillsStr = Array.isArray(u.skills)
+          ? u.skills.join(" ").toLowerCase()
+          : (u.skills || "").toLowerCase();
+        return (
+          u.name?.toLowerCase().includes(search.toLowerCase()) ||
+          skillsStr.includes(search.toLowerCase())
+        );
+      });
     }
 
     // FILTERS
     if (selectedFilter !== "All") {
-      matched = matched.filter((u) =>
-        u.skills
-          ?.toLowerCase()
-          .includes(selectedFilter.toLowerCase())
-      );
+      matched = matched.filter((u) => {
+        const skillsList = Array.isArray(u.skills)
+          ? u.skills.map((s: string) => s.toLowerCase())
+          : (u.skills?.split(",") || []).map((s: string) => s.trim().toLowerCase());
+        return skillsList.some((skill: string) =>
+          skill.includes(selectedFilter.toLowerCase())
+        );
+      });
     }
 
     // DEFAULT BUBBLE

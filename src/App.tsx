@@ -53,12 +53,16 @@ const Room = React.lazy(() => import("./components/Room"));
 
 const queryClient = new QueryClient();
 
-const WithNav = ({ children }: { children: React.ReactNode }) => (
-  <>
-    <Navbar />
-    {children}
-  </>
-);
+const WithNav = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  return (
+    <>
+      <Navbar />
+      {user && <StreakBadge />}
+      {children}
+    </>
+  );
+};
 
 function AppContent() {
   const { user } = useAuth();
@@ -94,19 +98,28 @@ function AppContent() {
   return (
     <>
       <div id="sparkle-container"></div>
-      <StreakBadge />
+
 
       <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-[#020617]"><div className="h-10 w-10 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent" /></div>}>
         <Routes>
           <Route
             path="/"
-            element={user ? <Navigate to="/dashboard" replace /> : <Index />}
+            element={user ? <Navigate to="/dashboard" replace /> : <WithNav><Index /></WithNav>}
           />
 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/ai" element={<AIPage />} />
+          <Route
+            path="/ai"
+            element={
+              <ProtectedRoute>
+                <WithNav>
+                  <AIPage />
+                </WithNav>
+              </ProtectedRoute>
+            }
+          />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/become-mentor" element={<BecomeMentor />} />
@@ -306,7 +319,12 @@ function AppContent() {
         </Routes>
       </Suspense>
 
-      <Chatbot />
+      {user && (
+        <>
+          <Chatbot />
+          <FloatingAI />
+        </>
+      )}
     </>
   );
 }
@@ -325,8 +343,6 @@ function App() {
                 <AppContent />
               </RoleProvider>
             </AuthProvider>
-
-            <FloatingAI />
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>

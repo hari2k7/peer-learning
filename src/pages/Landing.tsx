@@ -20,7 +20,9 @@ import {
   Rocket,
   Briefcase,
   Activity,
+  Menu, X
 } from "lucide-react";
+
 
 import { Button } from "@/components/ui/button";
 import {
@@ -157,6 +159,7 @@ const faqs = [
 export default function Landing() {
   const { scrollYProgress } = useScroll();
   const { setTheme } = useTheme();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const [open, setOpen] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -210,22 +213,21 @@ export default function Landing() {
   }, [loading]);
 
   useEffect(() => {
-  const handleScroll = () => {
-    setShowBackToTop(window.scrollY > 300);
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
-
-  window.addEventListener("scroll", handleScroll);
-
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
-
-const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
-};
-
 
   useEffect(() => {
     // Device-local daily streak using localStorage
@@ -237,14 +239,16 @@ const scrollToTop = () => {
 
     try {
       const last = localStorage.getItem(KEY_LAST);
-      const prevStreak = parseInt(localStorage.getItem(KEY_STREAK) || "0", 10) || 0;
+      const prevStreak =
+        parseInt(localStorage.getItem(KEY_STREAK) || "0", 10) || 0;
 
       if (last === todayKey) {
         // same day, keep streak
         setStreak(prevStreak > 0 ? prevStreak : 1);
       } else if (last) {
         const lastDate = new Date(last);
-        const diffMs = today.setHours(0, 0, 0, 0) - lastDate.setHours(0, 0, 0, 0);
+        const diffMs =
+          today.setHours(0, 0, 0, 0) - lastDate.setHours(0, 0, 0, 0);
         const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
         if (diffDays === 1) {
@@ -341,88 +345,6 @@ const scrollToTop = () => {
         />
       ))}
 
-      {/* Navbar */}
-      <nav className="fixed top-0 z-[1000] w-full border-b border-cyan-400/10 bg-[#020617]/95 backdrop-blur-3xl shadow-[0_0_20px_rgba(34,211,238,0.08)]">
-        {" "}
-        <div className="container mx-auto flex items-center justify-between px-6 py-5">
-          <div className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-2xl font-black text-transparent">
-            PeerLearn
-          </div>
-
-          <div className="hidden items-center gap-8 text-sm text-slate-300 md:flex">
-            <a href="#features" className="transition hover:text-cyan-400">
-              Features
-            </a>
-            <a href="#community" className="transition hover:text-cyan-400">
-              Communities
-            </a>
-            <a
-              href="/contributor-dashboard"
-              className="transition hover:text-cyan-400"
-            >
-              Contributor Dashboard
-            </a>
-            <a href="#faq" className="transition hover:text-cyan-400">
-              FAQ
-            </a>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 rounded-xl text-slate-300 hover:text-cyan-400"
-                title="Theme: Dark (Default)"
-              >
-                <Moon className="h-5 w-5 text-cyan-400" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={8} className="z-[1001] bg-[#0b1329] border-white/10 text-white min-w-[12rem]">
-              <DropdownMenuLabel className="text-gray-400 font-semibold text-xs px-2 py-1">Select Theme</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/10" />
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer focus:bg-white/10 hover:bg-white/10 focus:text-white px-3 py-2 text-sm rounded-lg" onClick={() => setTheme("default")}>
-                <span className="h-2 w-2 rounded-full bg-cyan-400" />
-                <span className="text-cyan-400 font-medium">Default</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer focus:bg-white/10 hover:bg-white/10 focus:text-white px-3 py-2 text-sm rounded-lg" onClick={() => setTheme("purple")}>
-                <span className="h-2 w-2 rounded-full bg-purple-500" />
-                <span className="text-purple-400 font-medium">Purple Galaxy</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer focus:bg-white/10 hover:bg-white/10 focus:text-white px-3 py-2 text-sm rounded-lg" onClick={() => setTheme("blue")}>
-                <span className="h-2 w-2 rounded-full bg-blue-500" />
-                <span className="text-blue-400 font-medium">Ocean Blue</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer focus:bg-white/10 hover:bg-white/10 focus:text-white px-3 py-2 text-sm rounded-lg" onClick={() => setTheme("green")}>
-                <span className="h-2 w-2 rounded-full bg-green-500" />
-                <span className="text-green-400 font-medium">Neon Green</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer focus:bg-white/10 hover:bg-white/10 focus:text-white px-3 py-2 text-sm rounded-lg" onClick={() => setTheme("orange")}>
-                <span className="h-2 w-2 rounded-full bg-orange-500" />
-                <span className="text-orange-400 font-medium">Sunset Orange</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-            <Link to="/login">
-              <Button
-                variant="ghost"
-                className="text-slate-300 hover:text-cyan-400"
-              >
-                Login
-              </Button>
-            </Link>
-
-            <Link to="/signup">
-              <Button className="rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black hover:scale-105 transition-all duration-300">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       {/* Hero */}
       {/* <section className="container relative grid items-center gap-16 px-6 pb-24 pt-24 lg:grid-cols-2">
         <motion.div
@@ -518,13 +440,15 @@ const scrollToTop = () => {
             transition={{ duration: 4, repeat: Infinity }}
             className="absolute -left-8 top-10 rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-2xl"
           >
-              <div className="flex items-center gap-3">
-                <Flame className="text-cyan-400" />
-                <div>
-                  <p className="text-sm text-slate-300">Your Streak</p>
-                  <h4 className="text-xl font-bold">{streak === null ? "—" : `${streak} Days 🔥`}</h4>
-                </div>
+            <div className="flex items-center gap-3">
+              <Flame className="text-cyan-400" />
+              <div>
+                <p className="text-sm text-slate-300">Your Streak</p>
+                <h4 className="text-xl font-bold">
+                  {streak === null ? "—" : `${streak} Days 🔥`}
+                </h4>
               </div>
+            </div>
           </motion.div>
 
           <motion.div
@@ -711,8 +635,8 @@ const scrollToTop = () => {
         </h2>
 
         <p className="mx-auto mb-16 max-w-3xl text-center text-base text-slate-300/75 md:text-lg">
-          Discover focused peer circles, track live activity, and join communities
-          designed around your goals.
+          Discover focused peer circles, track live activity, and join
+          communities designed around your goals.
         </p>
 
         <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
@@ -720,67 +644,69 @@ const scrollToTop = () => {
             const Icon = community.icon;
 
             return (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -10, scale: 1.02 }}
-              className={`group relative overflow-hidden rounded-[28px] border border-white/15 bg-white/10 p-7 backdrop-blur-2xl transition-all duration-300 hover:border-white/35 ${community.glow}`}
-            >
-              <div
-                className={`pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br ${community.accentFrom} ${community.accentTo} opacity-80`}
-              />
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className={`group relative overflow-hidden rounded-[28px] border border-white/15 bg-white/10 p-7 backdrop-blur-2xl transition-all duration-300 hover:border-white/35 ${community.glow}`}
+              >
+                <div
+                  className={`pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br ${community.accentFrom} ${community.accentTo} opacity-80`}
+                />
 
-              <div className="mb-5 flex items-start justify-between gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/15 text-cyan-200 shadow-[0_0_30px_rgba(255,255,255,0.08)]">
-                  <Icon className="h-7 w-7" />
+                <div className="mb-5 flex items-start justify-between gap-4">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/15 text-cyan-200 shadow-[0_0_30px_rgba(255,255,255,0.08)]">
+                    <Icon className="h-7 w-7" />
+                  </div>
+
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-slate-200">
+                      {community.primaryTag}
+                    </span>
+                    <span className="rounded-full border border-white/25 bg-black/20 px-3 py-1 text-xs font-medium text-slate-200/90">
+                      {community.secondaryTag}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap justify-end gap-2">
-                  <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-slate-200">
-                    {community.primaryTag}
-                  </span>
-                  <span className="rounded-full border border-white/25 bg-black/20 px-3 py-1 text-xs font-medium text-slate-200/90">
-                    {community.secondaryTag}
-                  </span>
+                <h3 className="text-xl font-bold text-white">
+                  {community.name}
+                </h3>
+                <p className="mt-3 min-h-[52px] text-sm leading-6 text-slate-200/80">
+                  {community.subtitle}
+                </p>
+
+                <div className="mt-5 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-slate-100/90">
+                    <Users className="h-4 w-4 text-cyan-200" />
+                    {community.members}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-100/90">
+                    <Activity className="h-4 w-4 text-cyan-200" />
+                    {community.activity}
+                  </div>
                 </div>
-              </div>
 
-              <h3 className="text-xl font-bold text-white">{community.name}</h3>
-              <p className="mt-3 min-h-[52px] text-sm leading-6 text-slate-200/80">
-                {community.subtitle}
-              </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Button
+                    asChild
+                    className="rounded-xl bg-white text-slate-900 hover:bg-cyan-100"
+                  >
+                    <Link to="/discover">Explore</Link>
+                  </Button>
 
-              <div className="mt-5 space-y-2">
-                <div className="flex items-center gap-2 text-sm text-slate-100/90">
-                  <Users className="h-4 w-4 text-cyan-200" />
-                  {community.members}
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="rounded-xl border-white/35 bg-white/5 text-slate-100 hover:bg-white/15"
+                  >
+                    <Link to="/signup">Join Community</Link>
+                  </Button>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-100/90">
-                  <Activity className="h-4 w-4 text-cyan-200" />
-                  {community.activity}
-                </div>
-              </div>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button
-                  asChild
-                  className="rounded-xl bg-white text-slate-900 hover:bg-cyan-100"
-                >
-                  <Link to="/discover">Explore</Link>
-                </Button>
-
-                <Button
-                  asChild
-                  variant="outline"
-                  className="rounded-xl border-white/35 bg-white/5 text-slate-100 hover:bg-white/15"
-                >
-                  <Link to="/signup">Join Community</Link>
-                </Button>
-              </div>
-            </motion.div>
+              </motion.div>
             );
           })}
         </div>
@@ -802,7 +728,8 @@ const scrollToTop = () => {
           aria-label="Scroll testimonials left"
           onClick={() => {
             const el = scrollRef.current;
-            if (el) el.scrollBy({ left: -el.clientWidth * 0.7, behavior: "smooth" });
+            if (el)
+              el.scrollBy({ left: -el.clientWidth * 0.7, behavior: "smooth" });
           }}
           className="absolute left-2 top-[60%] z-20 -translate-y-1/2 rounded-full border border-white/20 bg-black/40 p-2 text-slate-100 shadow-lg backdrop-blur hover:bg-black/60"
         >
@@ -813,7 +740,8 @@ const scrollToTop = () => {
           aria-label="Scroll testimonials right"
           onClick={() => {
             const el = scrollRef.current;
-            if (el) el.scrollBy({ left: el.clientWidth * 0.7, behavior: "smooth" });
+            if (el)
+              el.scrollBy({ left: el.clientWidth * 0.7, behavior: "smooth" });
           }}
           className="absolute right-2 top-[60%] z-20 -translate-y-1/2 rounded-full border border-white/20 bg-black/40 p-2 text-slate-100 shadow-lg backdrop-blur hover:bg-black/60"
         >
@@ -917,11 +845,19 @@ const scrollToTop = () => {
                   whileHover={{ y: -6 }}
                 >
                   <div className="mb-4 flex items-center gap-2">
-                    <span aria-hidden className="text-base tracking-wide text-yellow-400">{"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}</span>
+                    <span
+                      aria-hidden
+                      className="text-base tracking-wide text-yellow-400"
+                    >
+                      {"★".repeat(t.rating)}
+                      {"☆".repeat(5 - t.rating)}
+                    </span>
                     <span className="text-sm text-slate-300">{t.rating}/5</span>
                   </div>
                   <p className="flex items-start gap-3 leading-9 text-slate-100/95 text-lg">
-                    <span className="text-3xl text-cyan-400/90 leading-none">“</span>
+                    <span className="text-3xl text-cyan-400/90 leading-none">
+                      “
+                    </span>
                     <span className="text-slate-100/95">{t.text}</span>
                   </p>
 
@@ -1023,6 +959,12 @@ const scrollToTop = () => {
             <a href="#faq" className="transition hover:text-cyan-400">
               FAQ
             </a>
+            <a
+              href="/privacy-policy"
+              className="transition hover:text-cyan-400"
+            >
+              Privacy Policy
+            </a>
           </div>
 
           <div className="text-slate-500">© 2026 PeerLearn</div>
@@ -1034,7 +976,7 @@ const scrollToTop = () => {
           className="fixed bottom-6 right-24 z-50 rounded-full bg-cyan-500 px-4 py-3 text-black shadow-lg transition hover:bg-cyan-400"
           aria-label="Back to top"
         >
-        ↑
+          ↑
         </button>
       )}
     </motion.div>
