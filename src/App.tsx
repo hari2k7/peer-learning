@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RoleProvider } from "@/contexts/RoleContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import AdminRoute from "@/components/AdminRoute";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ProtectedMentorRoute from "@/components/ProtectedMentorRoute";
 
@@ -274,11 +275,11 @@ function AppContent() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <WithNav>
                   <Admin />
                 </WithNav>
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
 
