@@ -1,7 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/config/api";
-
 interface Partner {
   _id: string;
   name: string;
