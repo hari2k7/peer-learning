@@ -10,6 +10,7 @@ dotenv.config(); // must be first
 import authRoutes from "./routers/authRoutes.js";
 import chatRoutes from "./routers/chatRoutes.js";
 import aiRoutes from "./routers/aiRoutes.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -37,9 +38,8 @@ app.use("/api/ai", aiRoutes);
 app.use("/api", authRoutes);
 app.use("/api", chatRoutes);
 
-// app.use("/api/ai", aiRoutes);
-// app.use("/api", authRoutes);
-// app.use("/api", chatRoutes); // 👈 ADD THIS
+// Global Error Handler (must be the last middleware)
+app.use(errorHandler);
 
 console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
 console.log("SUPABASE_ANON_KEY:", process.env.SUPABASE_ANON_KEY?.slice(0, 15) + "...");
