@@ -72,8 +72,20 @@ const [summaryLoading, setSummaryLoading] =
 
   const messagesEndRef = useRef<any>(null);
   
-  // Track sessions that have already granted XP to prevent infinite farming
-  const awardedSessions = useRef<Set<string>>(new Set());
+  // Track sessions that have already granted XP to prevent infinite farming across reloads
+  const getAwardedSessions = () => {
+    try {
+      return new Set<string>(JSON.parse(localStorage.getItem('awardedSessions') || '[]'));
+    } catch {
+      return new Set<string>();
+    }
+  };
+
+  const markSessionAwarded = (id: string) => {
+    const awarded = getAwardedSessions();
+    awarded.add(id);
+    localStorage.setItem('awardedSessions', JSON.stringify([...awarded]));
+  };
 
   // FETCH SESSIONS
   useEffect(() => {
@@ -664,10 +676,11 @@ const [summaryLoading, setSummaryLoading] =
                 <button 
                   onClick={() => {
                     setIsVideoActive(true);
-                    // Prevent infinite XP farming loophole
-                    if (!awardedSessions.current.has(selectedSession.id)) {
+                    // Prevent infinite XP farming loophole across page reloads
+                    const awarded = getAwardedSessions();
+                    if (!awarded.has(selectedSession.id)) {
                       awardXP({ activity: 'session_join' });
-                      awardedSessions.current.add(selectedSession.id);
+                      markSessionAwarded(selectedSession.id);
                     }
                   }}
                   className="flex items-center gap-2 bg-gradient-to-r from-cyan-400 to-purple-500 text-black px-4 py-2 rounded-2xl font-bold hover:opacity-90 transition"
