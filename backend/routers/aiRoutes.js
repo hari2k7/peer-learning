@@ -5,35 +5,13 @@ import {
   generateSessionSummary,
 } from "../controllers/aiController.js";
 
-import { requireAuth, requireProfileRole } from "../middlewares/requireAuth.js";
-import { aiRouteRateLimiter } from "../middlewares/rateLimiter.js";
-import { validate } from "../middlewares/validate.js";
-import { aiSchemas } from "../validation/schemas.js";
+import { requireAuth } from "../middlewares/requireAuth.js";
+import { rateLimiter } from "../middlewares/rateLimiter.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const router = express.Router();
 
-/**
- * AI chat endpoint (secured version from main)
- */
-router.post(
-  "/ask",
-  requireAuth,
-  requireProfileRole("mentor", "learner"),
-  aiRouteRateLimiter,
-  validate(aiSchemas.askAI),
-  askAI
-);
-
-/**
- * Session summary generator (new feature)
- */
-router.post(
-  "/generate-summary",
-  requireAuth,
-  requireProfileRole("mentor", "learner"),
-  aiRouteRateLimiter,
-  validate(aiSchemas.generateSessionSummary),
-  generateSessionSummary
-);
+router.post("/ask", requireAuth, rateLimiter, asyncHandler(askAI));
+router.post("/generate-summary", asyncHandler(generateSessionSummary));
 
 export default router;

@@ -24,3 +24,7 @@ console.log("Backend server initialized");
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
 });
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
