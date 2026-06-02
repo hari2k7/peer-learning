@@ -15,6 +15,7 @@ import { useRole } from "@/contexts/RoleContext";
 import { useAuth } from "@/contexts/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
+import FocusTimer from "@/components/FocusTimer";
 
 
 import {
@@ -31,6 +32,7 @@ import {
   Moon,
   Users,
   BriefcaseBusiness,
+  FileCheck,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -116,6 +118,11 @@ const Navbar = () => {
           to: "/portfolio",
           label: "Portfolio",
           icon: BriefcaseBusiness,
+        },
+        {
+          to: "/peer-review",
+          label: "Peer Review",
+          icon: FileCheck,
         },
         ...(isAdmin
           ? [
@@ -281,6 +288,7 @@ const Navbar = () => {
                   </button>
                 </div>
               )}
+              <FocusTimer />
               <NotificationBell userId={user.id} />
 
               {/* PROFILE */}
@@ -411,7 +419,10 @@ const Navbar = () => {
                   <span className="text-sm font-medium text-gray-300">
                     Notifications
                   </span>
-                  <NotificationBell userId={user.id} />
+                  <div className="flex items-center gap-2">
+                    <FocusTimer />
+                    <NotificationBell userId={user.id} />
+                  </div>
                 </div>
 
                 <Button

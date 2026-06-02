@@ -86,14 +86,25 @@ const callOpenRouter = async ({ messages, maxTokens, temperature = 0.7, response
     body.response_format = responseFormat;
   }
 
-  const response = await fetch(OPENROUTER_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-    },
-    body: JSON.stringify(body),
-  });
+  let response;
+  try {
+    response = await fetch(OPENROUTER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new HttpError(503, "AI request timed out. Please try again.", {
+        retryable: true,
+        reason: "timeout",
+      });
+    }
+    throw error;
+  }
 
   if (!response.ok) {
     const errData = await response.json().catch(() => null);
@@ -108,32 +119,32 @@ const callOpenRouter = async ({ messages, maxTokens, temperature = 0.7, response
 
 export const askAI = async (req, res, next) => {
   try {
-    const { question } = req.body;
+    const { messages } = req.body;
 
-    if (!question || typeof question !== "string") {
-      return res.status(400).json({ error: "Invalid question provided" });
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: "Invalid messages provided" });
     }
 
-    if (question.length > 2000) {
-      return res.status(400).json({ error: "Question exceeds maximum length of 2000 characters" });
+    const latestMessage = messages[messages.length - 1].content;
+    if (typeof latestMessage !== "string" || latestMessage.length > 2000) {
+      return res.status(400).json({ error: "Message exceeds maximum length of 2000 characters" });
     }
 
-    const maxTokens = budgetResponseTokens(question, ASK_AI_MAX_TOKENS);
+    const maxTokens = budgetResponseTokens(latestMessage, ASK_AI_MAX_TOKENS);
+    
+    const openRouterMessages = [
+      {
+        role: "system",
+        content:
+          "You are an AI peer mentor for students. Answer questions about coding, AI, DSA, and roadmaps in a supportive, clear, and approachable way.",
+      },
+      ...messages.slice(-10).map(m => ({ role: m.role || "user", content: m.content || "" }))
+    ];
 
     const data = await callOpenRouter({
       maxTokens,
       temperature: 0.7,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an AI peer mentor for students. Answer questions about coding, AI, DSA, and roadmaps in a supportive, clear, and approachable way.",
-        },
-        {
-          role: "user",
-          content: question,
-        },
-      ],
+      messages: openRouterMessages,
     });
 
     const content = extractMessageContent(data);
@@ -195,7 +206,7 @@ export const generateSessionSummary = async (req, res, next) => {
 
     res.json(parseStrictSummaryContent(content));
   } catch (error) {
-    if (error.message === "Model did not return a valid summary JSON payload.") {
+    if (error instanceof SyntaxError || error.message === "Model did not return a valid summary JSON payload.") {
       next(new HttpError(502, "Summary generation returned an invalid response format."));
     } else {
       next(error);
