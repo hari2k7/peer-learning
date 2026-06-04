@@ -3,6 +3,8 @@ import express from "express";
 import {
   askAI,
   generateSessionSummary,
+  conductMockInterview,
+  generateMockInterviewReport,
 } from "../controllers/aiController.js";
 
 import { requireAuth } from "../middlewares/requireAuth.js";
@@ -17,5 +19,7 @@ const aiBodyLimit = express.json({ limit: "50kb" });
 
 router.post("/ask", aiBodyLimit, requireAuth, rateLimiter, asyncHandler(askAI));
 router.post("/generate-summary", aiBodyLimit, requireAuth, rateLimiter, asyncHandler(generateSessionSummary));
+router.post("/mock-interview/chat", aiBodyLimit, requireAuth, rateLimiter, asyncHandler(conductMockInterview));
+router.post("/mock-interview/report", aiBodyLimit, requireAuth, rateLimiter, asyncHandler(generateMockInterviewReport));
 
 export default router;
