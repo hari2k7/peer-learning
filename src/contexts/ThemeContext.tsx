@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "default" | "purple" | "blue" | "green" | "orange";
+export type Theme = "default" | "purple" | "blue" | "green" | "orange" | "black-white";
 
 interface ThemeContextType {
   theme: Theme;

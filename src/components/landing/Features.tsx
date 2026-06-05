@@ -127,7 +127,7 @@ export function Features() {
       </section>
 
       {/* Features */}
-      <section id="features" className="container px-6 py-24">
+      <section className="container px-6 py-24">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

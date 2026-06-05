@@ -278,7 +278,7 @@ const Navbar = () => {
                 <span className="h-2 w-2 rounded-full bg-orange-500" />
                 <span className="text-orange-400 font-medium">Sunset Orange</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer focus:bg-white/10 hover:bg-white/10 focus:text-white px-3 py-2 text-sm rounded-lg"onClick={() => setTheme("black-white")}>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer focus:bg-white/10 hover:bg-white/10 focus:text-white px-3 py-2 text-sm rounded-lg" onClick={() => setTheme("black-white")}>
                 <span className="h-2 w-2 rounded-full bg-black border border-white-400" />
                 <span className="text-gray-300 font-medium">Black White</span>
               </DropdownMenuItem>
