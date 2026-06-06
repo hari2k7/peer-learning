@@ -127,6 +127,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }, 5000);
 
+    const syncOnboardingState = async (user: User) => {
+      try {
+        // PERF: Read first to avoid firing a database write on every single page load
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("is_mentor, is_learner")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        let finalProfile = profile;
+        if (!finalProfile) {
+          finalProfile = await ensureProfileExists(user);
+        }
+
+        if (mounted) {
+          if (!finalProfile) {
+            setNeedsOnboarding(true);
+          } else {
+            setNeedsOnboarding(
+              finalProfile.is_mentor === false && finalProfile.is_learner === false
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Failed to sync onboarding state:", err);
+      }
+    };
+
     const initializeSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -140,27 +170,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await syncSessionCookie(session, setCookieSynced);
 
         if (session?.user) {
-          // PERF: Read first to avoid firing a database write on every single page load
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("is_mentor, is_learner")
-            .eq("id", session.user.id)
-            .maybeSingle();
-
-          if (!profile) {
-            const ensuredProfile = await ensureProfileExists(session.user);
-            if (!ensuredProfile) {
-              setNeedsOnboarding(true);
-            } else {
-              setNeedsOnboarding(
-                ensuredProfile.is_mentor === false && ensuredProfile.is_learner === false
-              );
-            }
-          } else {
-            setNeedsOnboarding(
-              profile.is_mentor === false && profile.is_learner === false
-            );
-          }
+          await syncOnboardingState(session.user);
         } else {
           setNeedsOnboarding(false);
         }
@@ -190,31 +200,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           syncSessionCookie(session, setCookieSynced);
 
           if (session?.user) {
-            try {
-              // PERF: Check if profile exists first, even on SIGNED_IN events
-              const { data: profile } = await supabase
-                .from("profiles")
-                .select("is_mentor, is_learner")
-                .eq("id", session.user.id)
-                .maybeSingle();
-
-              if (!profile) {
-                const ensuredProfile = await ensureProfileExists(session.user);
-                if (!ensuredProfile) {
-                  if (mounted) setNeedsOnboarding(true);
-                } else if (mounted) {
-                  setNeedsOnboarding(
-                    ensuredProfile.is_mentor === false && ensuredProfile.is_learner === false
-                  );
-                }
-              } else if (mounted) {
-                setNeedsOnboarding(
-                  profile.is_mentor === false && profile.is_learner === false
-                );
-              }
-            } catch (err) {
-              console.error("Failed to check onboarding profile:", err);
-            }
+            await syncOnboardingState(session.user);
           } else {
             setNeedsOnboarding(false);
           }
