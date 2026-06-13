@@ -15,10 +15,11 @@ Welcome to the troubleshooting guide for Peer Learning! If you encounter problem
 
 ## 2. Supabase Connection Errors
 
-**Symptom**: You see errors like "Failed to connect to database", "Network Error", or authentication features do not work.
+**Symptom**: You see errors like "Failed to connect to database", "Network Error", or authentication features do not work during signup or login.
 
 **Solution**:
 - Check your `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in your `.env` file. They must match exactly with your Supabase project settings.
+- If you encounter a "Failed to fetch" error during signup, verify that your `.env` file contains valid `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` values, then restart the development server.
 - If you are running Supabase locally using the CLI, ensure the Docker containers are running:
   ```bash
   supabase status

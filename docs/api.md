@@ -1,8 +1,8 @@
-# 🔌 API Documentation
+# API Documentation
 
 The Peer Learning Platform primarily relies on the **Supabase JavaScript Client** for interacting with the database, and a custom **Node.js Express Backend** for secure external API interactions (like the AI assistant).
 
-## 📡 Supabase Client APIs
+## Supabase Client APIs
 
 Most data operations are performed directly from the React frontend using the `supabase-js` client. RLS (Row-Level Security) policies in the database ensure these requests are secure.
 
@@ -34,7 +34,7 @@ const sendMessage = async (sessionId: string, content: string, userId: string) =
 };
 ```
 
-## 🤖 Custom Node.js API (AI Integration)
+## Custom Node.js API (AI Integration)
 
 For operations requiring secure handling of external API keys (e.g., OpenAI/OpenRouter), requests are sent to our custom backend.
 
@@ -67,7 +67,7 @@ Generates an AI summary of a chat session.
 - Requires a valid Supabase JWT token.
 - Protected by a custom, in-house rate limiter middleware (`backend/middlewares/rateLimiter.js`) to prevent abuse.
 
-## ⏱️ Cron Routes (`/api/cron`)
+## Cron Routes (`/api/cron`)
 
 These endpoints are triggered by a scheduled cron job and protected by the `CRON_SECRET` environment variable.
 
@@ -102,7 +102,7 @@ Finds incomplete mentorship milestones that are due or overdue within the next 2
 { "inserted": 2 }
 ```
 
-## 📣 Notification Routes (`/api/notifications`)
+## Notification Routes (`/api/notifications`)
 
 These endpoints support two authentication modes: `WEBHOOK_SECRET` for server-to-server calls, and a standard Supabase JWT for user-initiated calls.
 
