@@ -233,11 +233,7 @@ const Navbar = () => {
     key={link.to}
     to={link.to}
     className={className}
-    onClick={() => {
-      if (link.label === "Home") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }}
+   onClick={link.onClick}
   >
     <Icon size={16} />
     {link.label}
@@ -416,10 +412,13 @@ const Navbar = () => {
               const Icon = link.icon;
 
               return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setMobileOpen(false)}
+               <Link
+              key={link.to}
+              to={link.to}
+               onClick={() => {
+                link.onClick?.();
+                setMobileOpen(false);
+             }}
                   className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-4 text-base text-gray-300 transition hover:bg-white/10 hover:text-white"
                 >
 
