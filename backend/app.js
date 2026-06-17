@@ -21,8 +21,8 @@ if (process.env.TRUSTED_PROXIES) {
   app.set("trust proxy", process.env.TRUSTED_PROXIES.split(",").map(s => s.trim()));
   console.log(`[security] trust proxy enabled for subnets: ${process.env.TRUSTED_PROXIES}`);
 } else if (process.env.TRUST_PROXY === "true") {
-  app.set("trust proxy", 1);
-  console.warn("[security] trust proxy enabled with hop-count 1. Consider setting TRUSTED_PROXIES for explicit subnet whitelisting.");
+  console.error("[security] FATAL: TRUST_PROXY=true is insecure without TRUSTED_PROXIES. Provide comma-separated subnet ranges via TRUSTED_PROXIES.");
+  process.exit(1);
 }
 
 // SECURITY: Build a strict CORS origin whitelist.
