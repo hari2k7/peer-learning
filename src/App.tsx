@@ -22,7 +22,6 @@ import CookieConsentBanner from "./components/CookieConsentBanner";
 import FloatingAI from "./components/FloatingAI";
 import MouseSparkles from "./components/MouseSparkles";
 import BackToTop from "./components/BackToTop";  // ← ADDED THIS LINE
-
 import { useAuth } from "@/contexts/useAuth";
 
 // Lazy-loaded page & route-specific components (code-split per route)
@@ -63,6 +62,9 @@ const PeerReviewDashboard = React.lazy(() => import("./pages/PeerReviewDashboard
 const SubmitForReview = React.lazy(() => import("./pages/SubmitForReview"));
 const ReviewSubmission = React.lazy(() => import("./pages/ReviewSubmission"));
 const MockInterview = React.lazy(() => import("./pages/MockInterview"));
+const TermsAndConditions = React.lazy(
+  () => import("./pages/TermsAndConditions")
+);
 
 const queryClient = new QueryClient();
 
@@ -112,7 +114,7 @@ function AppContent() {
           <Route path="/contact" element={<WithNav><Contact /></WithNav>} />
           <Route path="/privacy-policy" element={<WithNav><PrivacyPolicy /></WithNav>} />
           <Route path="/cookies-policy" element={<WithNav><CookiesPolicy /></WithNav>} />
-
+           <Route path="/terms-and-conditions" element={<WithNav><TermsAndConditions /></WithNav>} />
           <Route path="/auth/callback" element={<AuthCallback />} />
 
           <Route
