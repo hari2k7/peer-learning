@@ -173,7 +173,8 @@ export const getSupabaseDiscover = async (req, res) => {
     let query = supabaseAdmin
       .from("profiles")
       .select("id, name, skills, interests, learning_goals, teach_subjects, learn_subjects, learning_style, preferred_language, timezone")
-      .neq("id", userId);
+      .neq("id", userId)
+      .limit(1000);
 
     if (search.trim()) {
       // Keep only alphanumeric chars, spaces, and hyphens.
