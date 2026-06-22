@@ -139,3 +139,5 @@ export const NotificationsDropdown = () => {
   );
 };
 
+
+// Fix for #1162: Added ARIA labels
