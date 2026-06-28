@@ -82,6 +82,8 @@ const PublicPortfolio = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isCancelled = false;
+
     const loadPortfolio = async () => {
       if (!slug) {
         setLoading(false);
@@ -106,6 +108,8 @@ const PublicPortfolio = () => {
           .eq("slug", slug)
           .eq("is_published", true)
           .maybeSingle();
+
+        if (isCancelled) return;
 
         if (portfolioError) {
           throw portfolioError;
@@ -138,6 +142,8 @@ const PublicPortfolio = () => {
           .eq("id", pd.profile_id)
           .maybeSingle();
 
+        if (isCancelled) return;
+
         if (profileError) {
           console.error("Profile query failed:", profileError);
         }
@@ -163,14 +169,19 @@ const PublicPortfolio = () => {
           profiles: profileData,
         });
       } catch (err) {
+        if (isCancelled) return;
         console.error("Failed to load public portfolio:", err);
         setPortfolio(null);
       } finally {
-        setLoading(false);
+        if (!isCancelled) setLoading(false);
       }
     };
 
     void loadPortfolio();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [slug]);
 
   const { endorsements, loading: endorsementsLoading, toggleEndorsement, currentUserId } =
