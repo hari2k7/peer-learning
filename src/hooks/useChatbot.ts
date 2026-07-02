@@ -9,6 +9,13 @@ export type Message = {
   created_at?: string;
 };
 
+/**
+ * Custom hook to manage the state and logic for the AI chatbot interface.
+ * Handles fetching chat history, sending messages to the AI backend,
+ * simulating typing effects, and auto-scrolling.
+ *
+ * @returns {Object} An object containing messages, input state, loading state, and the sendMessage function.
+ */
 export function useChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
