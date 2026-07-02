@@ -207,6 +207,8 @@ export type Database = {
           content: string | null
           created_at: string | null
           id: string
+          message: string | null
+          read_at: string | null
           receiver_id: string | null
           sender_id: string | null
           text: string | null
@@ -215,6 +217,8 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          message?: string | null
+          read_at?: string | null
           receiver_id?: string | null
           sender_id?: string | null
           text?: string | null
@@ -223,6 +227,8 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          message?: string | null
+          read_at?: string | null
           receiver_id?: string | null
           sender_id?: string | null
           text?: string | null
@@ -654,6 +660,10 @@ export type Database = {
       }
       join_session: {
         Args: { p_session_id: string }
+        Returns: undefined
+      }
+      mark_messages_as_read: {
+        Args: { message_ids: string[] }
         Returns: undefined
       }
       tick_session_statuses: {
