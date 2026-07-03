@@ -634,6 +634,13 @@ export type Database = {
         }
         Returns: number
       }
+      has_role: {
+        Args: {
+          _role: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       invite_to_study_room: {
         Args: {
           p_room_id: string
