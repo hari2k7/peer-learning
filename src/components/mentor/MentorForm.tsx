@@ -31,6 +31,18 @@ export default function MentorForm() {
     skills: [] as string[],
     mentorship_types: [] as string[],
   });
+
+  // Clear validation error reactively when user fixes input (#1614)
+  useEffect(() => {
+    if (!error) return;
+    const isValid =
+      (step === 0 && validateBasicInfo()) ||
+      (step === 1 && validateSkills()) ||
+      (step === 2 && validateExperience()) ||
+      (step === 3 && validateMentorship());
+    if (isValid) setError("");
+  }, [formData, step]);
+
   useEffect(() => {
     const fetchSkills = async () => {
       const { data } = await (supabase as any).from("skills_taxonomy").select("name").order("name");
@@ -440,4 +452,3 @@ export default function MentorForm() {
     </div>
   );
 }
-// Fix for #1167: Refined zod schema validation
